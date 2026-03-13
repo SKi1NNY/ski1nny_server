@@ -1,0 +1,26 @@
+[
+  {
+    "inci_name": "Niacinamide",
+    "korean_name": "나이아신아마이드",
+    "category": "Brightening",
+    "description": "피부 장벽 강화와 피지 조절에 자주 사용되는 비타민 B3 유도체입니다."
+  },
+  {
+    "inci_name": "Retinol",
+    "korean_name": "레티놀",
+    "category": "Anti-aging",
+    "description": "주름 개선과 턴오버 촉진에 사용되는 비타민 A 계열 성분입니다."
+  },
+  {
+    "inci_name": "Glycolic Acid",
+    "korean_name": "글리콜릭애씨드",
+    "category": "Exfoliant",
+    "description": "각질 제거와 피부결 개선에 사용되는 대표적인 AHA 성분입니다."
+  },
+  {
+    "inci_name": "Fragrance",
+    "korean_name": "향료",
+    "category": "Additive",
+    "description": "향을 부여하기 위한 성분군으로, 민감성 피부에는 자극 요인이 될 수 있습니다."
+  }
+]

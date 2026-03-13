@@ -1,0 +1,14 @@
+[
+  {
+    "ingredient_a_inci_name": "Glycolic Acid",
+    "ingredient_b_inci_name": "Retinol",
+    "severity": "HIGH",
+    "reason": "AHA와 레티놀의 병용은 피부 자극과 장벽 손상 위험을 높일 수 있습니다."
+  },
+  {
+    "ingredient_a_inci_name": "Fragrance",
+    "ingredient_b_inci_name": "Retinol",
+    "severity": "MID",
+    "reason": "민감성 피부에서는 향료와 레티놀 조합이 자극 가능성을 높일 수 있습니다."
+  }
+]
