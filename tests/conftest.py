@@ -4,7 +4,7 @@ import os
 from collections.abc import Generator
 
 import pytest
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.config import settings
@@ -25,7 +25,10 @@ MODEL_MODULES = (
 
 @pytest.fixture(scope="session")
 def test_database_url() -> str:
-    return os.getenv("TEST_DATABASE_URL", settings.sqlalchemy_database_uri)
+    test_database_url = os.getenv("TEST_DATABASE_URL")
+    if not test_database_url:
+        pytest.skip("TEST_DATABASE_URL is required to run database-backed tests.")
+    return test_database_url
 
 
 @pytest.fixture(scope="session")
@@ -39,19 +42,26 @@ def engine(test_database_url: str):
 
 @pytest.fixture
 def db_session(engine) -> Generator[Session, None, None]:
+    connection = engine.connect()
+    outer_transaction = connection.begin()
     testing_session_local = sessionmaker(
-        bind=engine,
+        bind=connection,
         autoflush=False,
         autocommit=False,
         expire_on_commit=False,
         class_=Session,
     )
     session = testing_session_local()
-    transaction = session.begin()
+    session.begin_nested()
+
+    @event.listens_for(session, "after_transaction_end")
+    def restart_savepoint(session_: Session, transaction) -> None:
+        if transaction.nested and not transaction._parent.nested:
+            session_.begin_nested()
 
     try:
         yield session
     finally:
-        if transaction.is_active:
-            transaction.rollback()
         session.close()
+        outer_transaction.rollback()
+        connection.close()
