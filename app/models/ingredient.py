@@ -5,7 +5,7 @@ from enum import Enum
 from typing import TYPE_CHECKING
 from uuid import UUID as UUIDValue, uuid4
 
-from sqlalchemy import CheckConstraint, DateTime, Enum as SqlEnum, ForeignKey, String, Text, UniqueConstraint, func
+from sqlalchemy import CheckConstraint, DateTime, Enum as SqlEnum, ForeignKey, Index, String, Text, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -107,3 +107,8 @@ class IngredientConflict(Base):
         back_populates="conflicts_as_b",
         foreign_keys=[ingredient_b_id],
     )
+
+
+Index("ix_ingredient_aliases_alias_name_lower", func.lower(IngredientAlias.alias_name))
+Index("ix_ingredient_conflicts_ingredient_a_id", IngredientConflict.ingredient_a_id)
+Index("ix_ingredient_conflicts_ingredient_b_id", IngredientConflict.ingredient_b_id)
