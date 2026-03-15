@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from app.core.ocr_client import OCRResult
-from app.models.ingredient import Ingredient, IngredientAlias
-from app.models.user import User
+from app.models.ingredient import ConflictSeverity, Ingredient, IngredientAlias, IngredientConflict
+from app.models.user import SkinType, User
 from app.services.scan_service import ScanService
+from app.services.user_profile_service import UserProfileService
 
 
 class FakeOCRClient:
@@ -40,10 +41,37 @@ def _create_ingredient(db_session, inci_name: str, alias_name: str | None = None
     return ingredient
 
 
+def _create_conflict(db_session, ingredient_a, ingredient_b, severity: ConflictSeverity, reason: str):
+    ordered = sorted([ingredient_a, ingredient_b], key=lambda item: item.id.int)
+    db_session.add(
+        IngredientConflict(
+            ingredient_a_id=ordered[0].id,
+            ingredient_b_id=ordered[1].id,
+            severity=severity,
+            reason=reason,
+        )
+    )
+    db_session.flush()
+
+
 def test_scan_service_maps_aliases_and_preserves_raw_text(db_session):
     user = _create_user(db_session)
     niacinamide = _create_ingredient(db_session, "Niacinamide", alias_name="나이아신아마이드")
-    _create_ingredient(db_session, "Retinol")
+    retinol = _create_ingredient(db_session, "Retinol")
+    _create_conflict(
+        db_session,
+        niacinamide,
+        retinol,
+        ConflictSeverity.HIGH,
+        "These ingredients should not be combined.",
+    )
+    UserProfileService().upsert_profile(
+        db_session,
+        user_id=user.id,
+        skin_type=SkinType.SENSITIVE,
+        skin_concerns=["redness"],
+        notes="scan-validation",
+    )
 
     service = ScanService(FakeOCRClient("나이아신아마이드, Unknown 123, Retinol (0.1%)", 0.95))
 
@@ -63,6 +91,10 @@ def test_scan_service_maps_aliases_and_preserves_raw_text(db_session):
     ]
     assert result.recognized_ingredients[0].ingredient_id == niacinamide.id
     assert result.unmapped_ingredients == ["Unknown"]
+    assert result.validation is not None
+    assert result.validation.is_safe is False
+    assert result.validation.severity == ConflictSeverity.HIGH
+    assert len(result.validation.conflicts) == 1
 
 
 def test_scan_service_returns_fallback_for_low_confidence(db_session):

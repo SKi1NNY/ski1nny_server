@@ -12,6 +12,7 @@ from app.models.ingredient import Ingredient
 from app.repositories.ingredient_repository import IngredientRepository
 from app.repositories.scan_repository import ParsedIngredientCreateItem, ScanRepository
 from app.schemas.product import ScanFallbackResponse, ScanRecognizedIngredientResponse, ScanResponse
+from app.services.validation_service import ValidationService
 
 CONFIDENCE_THRESHOLD = 0.80
 TOKEN_SPLIT_PATTERN = re.compile(r"[\n,;/]+")
@@ -37,10 +38,12 @@ class ScanService:
         ocr_client: OCRClient,
         ingredient_repository: IngredientRepository | None = None,
         scan_repository: ScanRepository | None = None,
+        validation_service: ValidationService | None = None,
     ) -> None:
         self.ocr_client = ocr_client
         self.ingredient_repository = ingredient_repository or IngredientRepository()
         self.scan_repository = scan_repository or ScanRepository()
+        self.validation_service = validation_service or ValidationService()
 
     def scan_ingredients(
         self,
@@ -82,6 +85,16 @@ class ScanService:
                 reason="OCR confidence is below the automatic parsing threshold.",
             )
 
+        validation = self.validation_service.validate_ingredients(
+            db,
+            ingredient_ids=[
+                token.ingredient.id
+                for token in normalized_tokens
+                if token.ingredient is not None
+            ],
+            user_id=user_id,
+        )
+
         return ScanResponse(
             scan_id=scan_result.id,
             product_id=scan_result.product_id,
@@ -102,6 +115,7 @@ class ScanService:
                 if not token.is_mapped
             ],
             fallback=fallback,
+            validation=validation,
         )
 
     def _extract_text(self, *, image_bytes: bytes, filename: str | None) -> OCRResult:

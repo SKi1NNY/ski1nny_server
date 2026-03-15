@@ -4,6 +4,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.schemas.ingredient import IngredientValidationResponse
+
 
 class ProductIngredientCreateItem(BaseModel):
     ingredient_id: UUID
@@ -61,3 +63,4 @@ class ScanResponse(BaseModel):
     recognized_ingredients: list[ScanRecognizedIngredientResponse] = Field(default_factory=list)
     unmapped_ingredients: list[str] = Field(default_factory=list)
     fallback: ScanFallbackResponse | None = None
+    validation: IngredientValidationResponse | None = None
