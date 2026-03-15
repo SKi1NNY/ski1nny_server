@@ -23,3 +23,18 @@ class UserRepository:
     def get_by_id(self, db: Session, user_id: UUID) -> User | None:
         stmt = select(User).where(User.id == user_id)
         return db.scalar(stmt)
+
+    def update_auth_state(
+        self,
+        db: Session,
+        user: User,
+        *,
+        is_active: bool | None = None,
+        is_deleted: bool | None = None,
+    ) -> User:
+        if is_active is not None:
+            user.is_active = is_active
+        if is_deleted is not None:
+            user.is_deleted = is_deleted
+        db.flush()
+        return user

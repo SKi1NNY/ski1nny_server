@@ -22,6 +22,12 @@ class Settings(BaseSettings):
 
     redis_url: str = "redis://localhost:6379/0"
 
+    jwt_secret_key: str = "change-me-access-secret-key-32-bytes"
+    jwt_refresh_secret_key: str = "change-me-refresh-secret-key-32bytes"
+    jwt_algorithm: str = "HS256"
+    jwt_access_token_expire_minutes: int = 30
+    jwt_refresh_token_expire_days: int = 14
+
     anthropic_api_key: str | None = None
     pinecone_api_key: str | None = None
     pinecone_index_name: str = "skinny-ingredients"
