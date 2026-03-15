@@ -17,9 +17,26 @@ class UserSignupRequest(BaseModel):
 class UserResponse(BaseModel):
     id: UUID
     email: str
+    is_active: bool
+    is_deleted: bool
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class UserLoginRequest(BaseModel):
+    email: str = Field(min_length=3, max_length=255)
+    password: str = Field(min_length=8, max_length=255)
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
 
 
 class UserProfileUpsertRequest(BaseModel):
