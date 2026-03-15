@@ -4,7 +4,7 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
-from app.core.exceptions import NotFoundError
+from app.core.exceptions import ProductNotFoundError, TroubleLogNotFoundError, UserNotFoundError
 from app.models.trouble_log import TroubleLog
 from app.repositories.product_repository import ProductRepository
 from app.repositories.trouble_log_repository import TroubleIngredientStat, TroubleLogRepository
@@ -38,7 +38,7 @@ class TroubleLogService:
         self._ensure_user_exists(db, user_id)
         product = self.product_repository.get_by_id(db, product_id)
         if product is None:
-            raise NotFoundError("Product does not exist.")
+            raise ProductNotFoundError()
 
         trouble_log = self.trouble_log_repository.create(
             db,
@@ -58,7 +58,7 @@ class TroubleLogService:
 
         reloaded = self.trouble_log_repository.get_by_id(db, trouble_log.id, user_id=user_id)
         if reloaded is None:
-            raise NotFoundError("Trouble log could not be loaded.")
+            raise TroubleLogNotFoundError("Trouble log could not be loaded.")
 
         suggestions = self._build_suggestions(
             self.trouble_log_repository.aggregate_ingredient_occurrences(db, user_id),
@@ -77,14 +77,14 @@ class TroubleLogService:
         self._ensure_user_exists(db, user_id)
         trouble_log = self.trouble_log_repository.get_by_id(db, trouble_log_id, user_id=user_id)
         if trouble_log is None or trouble_log.is_deleted:
-            raise NotFoundError("Trouble log does not exist.")
+            raise TroubleLogNotFoundError()
         deleted = self.trouble_log_repository.soft_delete(db, trouble_log)
         db.commit()
         return self._build_trouble_log_response(deleted)
 
     def _ensure_user_exists(self, db: Session, user_id: UUID) -> None:
         if self.user_repository.get_by_id(db, user_id) is None:
-            raise NotFoundError("User does not exist.")
+            raise UserNotFoundError()
 
     def _build_suggestions(self, stats: list[TroubleIngredientStat]) -> list[SuggestedAvoidIngredientResponse]:
         return [

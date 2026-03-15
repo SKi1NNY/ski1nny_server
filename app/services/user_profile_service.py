@@ -5,7 +5,13 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
-from app.core.exceptions import ConflictError, NotFoundError, ValidationError
+from app.core.exceptions import (
+    DuplicateAvoidIngredientError,
+    InvalidIngredientReferenceError,
+    AvoidIngredientNotFoundError,
+    UserNotFoundError,
+    UserProfileNotFoundError,
+)
 from app.models.user import UserProfile
 from app.repositories.ingredient_repository import IngredientRepository
 from app.repositories.user_profile_repository import UserProfileRepository
@@ -40,7 +46,7 @@ class UserProfileService:
         self._ensure_user_exists(db, user_id)
         profile = self.profile_repository.get_profile_by_user_id(db, user_id)
         if profile is None:
-            raise NotFoundError("User profile does not exist.")
+            raise UserProfileNotFoundError()
         avoid_ingredients = self.profile_repository.list_avoid_ingredients(db, user_id)
         return self._build_profile_response(profile, avoid_ingredients)
 
@@ -81,7 +87,7 @@ class UserProfileService:
         self._ensure_user_exists(db, user_id)
         ingredient = self.ingredient_repository.get_by_id(db, ingredient_id)
         if ingredient is None:
-            raise ValidationError("Ingredient does not exist.")
+            raise InvalidIngredientReferenceError("Ingredient does not exist.")
 
         existing = self.profile_repository.get_avoid_ingredient_by_user_and_ingredient(
             db,
@@ -89,7 +95,7 @@ class UserProfileService:
             ingredient_id=ingredient_id,
         )
         if existing is not None:
-            raise ConflictError("Avoid ingredient already exists.")
+            raise DuplicateAvoidIngredientError()
 
         avoid_ingredient = self.profile_repository.add_avoid_ingredient(
             db,
@@ -108,7 +114,7 @@ class UserProfileService:
             user_id=user_id,
         )
         if avoid_ingredient is None:
-            raise NotFoundError("Avoid ingredient does not exist.")
+            raise AvoidIngredientNotFoundError()
         self.profile_repository.delete_avoid_ingredient(db, avoid_ingredient)
         db.commit()
         self.cache_invalidator.invalidate_recommendation_cache(user_id)
@@ -116,7 +122,7 @@ class UserProfileService:
     def _ensure_user_exists(self, db: Session, user_id: UUID) -> None:
         user = self.user_repository.get_by_id(db, user_id)
         if user is None:
-            raise NotFoundError("User does not exist.")
+            raise UserNotFoundError()
 
     def _build_profile_response(self, profile: UserProfile, avoid_ingredients) -> UserProfileResponse:
         return UserProfileResponse(

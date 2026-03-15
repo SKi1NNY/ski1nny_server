@@ -25,10 +25,25 @@ class ValidationError(SkinnyError):
     message = "The request data is invalid."
 
 
+class InvalidIngredientReferenceError(ValidationError):
+    error_code = "invalid_ingredient_reference"
+    message = "One or more ingredient references are invalid."
+
+
 class AuthenticationError(SkinnyError):
     status_code = 401
     error_code = "authentication_error"
     message = "Authentication failed."
+
+
+class InvalidCredentialsError(AuthenticationError):
+    error_code = "invalid_credentials"
+    message = "Invalid email or password."
+
+
+class InvalidRefreshTokenError(AuthenticationError):
+    error_code = "invalid_refresh_token"
+    message = "Refresh token is invalid."
 
 
 class PermissionDeniedError(SkinnyError):
@@ -37,16 +52,66 @@ class PermissionDeniedError(SkinnyError):
     message = "You do not have permission to access this resource."
 
 
+class InactiveUserError(PermissionDeniedError):
+    error_code = "inactive_user"
+    message = "User account is inactive."
+
+
+class DeletedUserError(PermissionDeniedError):
+    error_code = "deleted_user"
+    message = "User account is deleted."
+
+
 class NotFoundError(SkinnyError):
     status_code = 404
     error_code = "not_found"
     message = "The requested resource does not exist."
 
 
+class UserNotFoundError(NotFoundError):
+    error_code = "user_not_found"
+    message = "User does not exist."
+
+
+class UserProfileNotFoundError(NotFoundError):
+    error_code = "user_profile_not_found"
+    message = "User profile does not exist."
+
+
+class ProductNotFoundError(NotFoundError):
+    error_code = "product_not_found"
+    message = "Product does not exist."
+
+
+class TroubleLogNotFoundError(NotFoundError):
+    error_code = "trouble_log_not_found"
+    message = "Trouble log does not exist."
+
+
+class AvoidIngredientNotFoundError(NotFoundError):
+    error_code = "avoid_ingredient_not_found"
+    message = "Avoid ingredient does not exist."
+
+
 class ConflictError(SkinnyError):
     status_code = 409
     error_code = "conflict"
     message = "The request conflicts with the current resource state."
+
+
+class DuplicateEmailError(ConflictError):
+    error_code = "duplicate_email"
+    message = "Email already exists."
+
+
+class DuplicateBarcodeError(ConflictError):
+    error_code = "duplicate_barcode"
+    message = "Barcode already exists."
+
+
+class DuplicateAvoidIngredientError(ConflictError):
+    error_code = "duplicate_avoid_ingredient"
+    message = "Avoid ingredient already exists."
 
 
 class ExternalServiceError(SkinnyError):

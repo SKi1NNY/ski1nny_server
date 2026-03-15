@@ -45,7 +45,7 @@ def test_conflict_error_uses_global_error_format(client: TestClient):
 
     assert duplicate_response.status_code == 409
     assert duplicate_response.json() == {
-        "error_code": "conflict",
+        "error_code": "duplicate_email",
         "message": "Email already exists.",
         "detail": {},
     }

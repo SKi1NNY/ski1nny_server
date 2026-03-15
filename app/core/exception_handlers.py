@@ -9,6 +9,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from app.core.exceptions import SkinnyError
+from app.schemas.error import ErrorResponse
 
 logger = logging.getLogger(__name__)
 
@@ -21,43 +22,41 @@ def register_exception_handlers(app: FastAPI) -> None:
 
 
 async def skinny_error_handler(_: Request, exc: SkinnyError) -> JSONResponse:
-    return JSONResponse(status_code=exc.status_code, content=exc.to_dict())
+    payload = ErrorResponse(**exc.to_dict())
+    return JSONResponse(status_code=exc.status_code, content=payload.model_dump())
 
 
 async def http_exception_handler(_: Request, exc: HTTPException) -> JSONResponse:
     message, detail = _normalize_http_detail(exc.detail)
     error_code = _status_to_error_code(exc.status_code)
+    payload = ErrorResponse(
+        error_code=error_code,
+        message=message,
+        detail=detail,
+    )
     return JSONResponse(
         status_code=exc.status_code,
-        content={
-            "error_code": error_code,
-            "message": message,
-            "detail": detail,
-        },
+        content=payload.model_dump(),
     )
 
 
 async def request_validation_error_handler(_: Request, exc: RequestValidationError) -> JSONResponse:
-    return JSONResponse(
-        status_code=422,
-        content={
-            "error_code": "request_validation_error",
-            "message": "The request payload is invalid.",
-            "detail": {"errors": exc.errors()},
-        },
+    payload = ErrorResponse(
+        error_code="request_validation_error",
+        message="The request payload is invalid.",
+        detail={"errors": exc.errors()},
     )
+    return JSONResponse(status_code=422, content=payload.model_dump())
 
 
 async def unhandled_exception_handler(_: Request, exc: Exception) -> JSONResponse:
     logger.exception("Unhandled application error", exc_info=exc)
-    return JSONResponse(
-        status_code=500,
-        content={
-            "error_code": "internal_server_error",
-            "message": "An unexpected error occurred.",
-            "detail": {},
-        },
+    payload = ErrorResponse(
+        error_code="internal_server_error",
+        message="An unexpected error occurred.",
+        detail={},
     )
+    return JSONResponse(status_code=500, content=payload.model_dump())
 
 
 def _normalize_http_detail(detail: Any) -> tuple[str, dict[str, Any]]:

@@ -7,7 +7,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.exceptions import AuthenticationError, PermissionDeniedError
+from app.core.exceptions import AuthenticationError, DeletedUserError, InactiveUserError, UserNotFoundError
 from app.core.security import TokenDecodeError, decode_access_token
 from app.repositories.user_repository import UserRepository
 
@@ -34,13 +34,13 @@ def get_current_user(
     user_id = UUID(str(payload["sub"]))
     user = repository.get_by_id(db, user_id)
     if user is None:
-        raise AuthenticationError("Authenticated user does not exist.")
+        raise UserNotFoundError("Authenticated user does not exist.")
     return user
 
 
 def get_current_active_user(current_user=Depends(get_current_user)):
     if not current_user.is_active:
-        raise PermissionDeniedError("User account is inactive.")
+        raise InactiveUserError()
     if current_user.is_deleted:
-        raise PermissionDeniedError("User account is deleted.")
+        raise DeletedUserError()
     return current_user

@@ -6,17 +6,16 @@ from fastapi import APIRouter, Depends, File, Form, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.exceptions import ConflictError, ExternalServiceError, InternalServerError, NotFoundError, ValidationError
 from app.core.ocr_client import get_ocr_client
-from app.repositories.product_repository import ProductRepository
-from app.schemas.product import ProductCreateRequest, ProductIngredientResponse, ProductResponse, ScanResponse
+from app.schemas.product import ProductCreateRequest, ProductResponse, ScanResponse
+from app.services.product_service import ProductService
 from app.services.scan_service import ScanService
 
 router = APIRouter()
 
 
-def get_product_repository() -> ProductRepository:
-    return ProductRepository()
+def get_product_service() -> ProductService:
+    return ProductService()
 
 
 def get_scan_service() -> ScanService:
@@ -27,31 +26,9 @@ def get_scan_service() -> ScanService:
 def create_product(
     payload: ProductCreateRequest,
     db: Session = Depends(get_db),
-    repository: ProductRepository = Depends(get_product_repository),
+    service: ProductService = Depends(get_product_service),
 ) -> ProductResponse:
-    if payload.barcode and repository.get_by_barcode(db, payload.barcode):
-        raise ConflictError("Barcode already exists.")
-
-    ingredient_ids = [item.ingredient_id for item in payload.ingredients]
-    if len(set(ingredient_ids)) != len(ingredient_ids):
-        raise ValidationError("Duplicate ingredient IDs are not allowed.")
-
-    if repository.count_matching_ingredients(db, ingredient_ids) != len(set(ingredient_ids)):
-        raise ValidationError("One or more ingredient IDs are invalid.")
-
-    product = repository.create(
-        db,
-        name=payload.name,
-        brand=payload.brand,
-        category=payload.category,
-        barcode=payload.barcode,
-        ingredient_items=[(item.ingredient_id, item.ingredient_order) for item in payload.ingredients],
-    )
-    db.commit()
-    reloaded_product = repository.get_by_id(db, product.id)
-    if reloaded_product is None:
-        raise InternalServerError("Product could not be reloaded.")
-    return _build_product_response(reloaded_product)
+    return service.create_product(db, payload=payload)
 
 
 @router.post("/scan", response_model=ScanResponse)
@@ -60,47 +37,20 @@ async def scan_product_ingredients(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
     scan_service: ScanService = Depends(get_scan_service),
-    ) -> ScanResponse:
+) -> ScanResponse:
     image_bytes = await file.read()
-    try:
-        return scan_service.scan_ingredients(
-            db,
-            user_id=user_id,
-            image_bytes=image_bytes,
-            filename=file.filename,
-        )
-    except (ValidationError, ExternalServiceError):
-        db.rollback()
-        raise
+    return scan_service.scan_ingredients(
+        db,
+        user_id=user_id,
+        image_bytes=image_bytes,
+        filename=file.filename,
+    )
 
 
 @router.get("/{product_id}", response_model=ProductResponse)
 def get_product(
     product_id: UUID,
     db: Session = Depends(get_db),
-    repository: ProductRepository = Depends(get_product_repository),
+    service: ProductService = Depends(get_product_service),
 ) -> ProductResponse:
-    product = repository.get_by_id(db, product_id)
-    if product is None:
-        raise NotFoundError("Product not found.")
-    return _build_product_response(product)
-
-
-def _build_product_response(product) -> ProductResponse:
-    return ProductResponse(
-        id=product.id,
-        name=product.name,
-        brand=product.brand,
-        category=product.category,
-        barcode=product.barcode,
-        ingredients=[
-            ProductIngredientResponse(
-                ingredient_id=item.ingredient_id,
-                inci_name=item.ingredient.inci_name,
-                korean_name=item.ingredient.korean_name,
-                category=item.ingredient.category,
-                ingredient_order=item.ingredient_order,
-            )
-            for item in product.product_ingredients
-        ],
-    )
+    return service.get_product(db, product_id=product_id)
