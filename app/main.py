@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import ingredient, product, user, recommendation
 from app.core.config import settings
+from app.core.exception_handlers import register_exception_handlers
 
 app = FastAPI(
     title=settings.app_name,
@@ -10,6 +11,8 @@ app = FastAPI(
     version=settings.app_version,
     debug=settings.debug,
 )
+
+register_exception_handlers(app)
 
 app.add_middleware(
     CORSMiddleware,

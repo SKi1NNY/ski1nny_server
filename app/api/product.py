@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.exceptions import ExternalServiceError, ValidationError
+from app.core.exceptions import ConflictError, ExternalServiceError, InternalServerError, NotFoundError, ValidationError
 from app.core.ocr_client import get_ocr_client
 from app.repositories.product_repository import ProductRepository
 from app.schemas.product import ProductCreateRequest, ProductIngredientResponse, ProductResponse, ScanResponse
@@ -30,17 +30,14 @@ def create_product(
     repository: ProductRepository = Depends(get_product_repository),
 ) -> ProductResponse:
     if payload.barcode and repository.get_by_barcode(db, payload.barcode):
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Barcode already exists.")
+        raise ConflictError("Barcode already exists.")
 
     ingredient_ids = [item.ingredient_id for item in payload.ingredients]
     if len(set(ingredient_ids)) != len(ingredient_ids):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Duplicate ingredient IDs are not allowed.",
-        )
+        raise ValidationError("Duplicate ingredient IDs are not allowed.")
 
     if repository.count_matching_ingredients(db, ingredient_ids) != len(set(ingredient_ids)):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="One or more ingredient IDs are invalid.")
+        raise ValidationError("One or more ingredient IDs are invalid.")
 
     product = repository.create(
         db,
@@ -53,7 +50,7 @@ def create_product(
     db.commit()
     reloaded_product = repository.get_by_id(db, product.id)
     if reloaded_product is None:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Product could not be reloaded.")
+        raise InternalServerError("Product could not be reloaded.")
     return _build_product_response(reloaded_product)
 
 
@@ -63,21 +60,18 @@ async def scan_product_ingredients(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
     scan_service: ScanService = Depends(get_scan_service),
-) -> ScanResponse:
+    ) -> ScanResponse:
+    image_bytes = await file.read()
     try:
-        image_bytes = await file.read()
         return scan_service.scan_ingredients(
             db,
             user_id=user_id,
             image_bytes=image_bytes,
             filename=file.filename,
         )
-    except ValidationError as exc:
+    except (ValidationError, ExternalServiceError):
         db.rollback()
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=exc.message) from exc
-    except ExternalServiceError as exc:
-        db.rollback()
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=exc.message) from exc
+        raise
 
 
 @router.get("/{product_id}", response_model=ProductResponse)
@@ -88,7 +82,7 @@ def get_product(
 ) -> ProductResponse:
     product = repository.get_by_id(db, product_id)
     if product is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found.")
+        raise NotFoundError("Product not found.")
     return _build_product_response(product)
 
 

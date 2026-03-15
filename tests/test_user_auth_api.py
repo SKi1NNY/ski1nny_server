@@ -64,6 +64,7 @@ def test_login_refresh_and_protected_profile_flow(client: TestClient):
         json={"refresh_token": access_token},
     )
     assert invalid_refresh_response.status_code == 401
+    assert invalid_refresh_response.json()["error_code"] == "authentication_error"
 
 
 def test_inactive_and_deleted_users_are_blocked(client: TestClient, db_session):
@@ -79,6 +80,7 @@ def test_inactive_and_deleted_users_are_blocked(client: TestClient, db_session):
         headers={"Authorization": f"Bearer {create_access_token(user.id)}"},
     )
     assert inactive_response.status_code == 403
+    assert inactive_response.json()["error_code"] == "permission_denied"
 
     repository.update_auth_state(db_session, user, is_active=True, is_deleted=True)
     db_session.commit()
@@ -88,3 +90,4 @@ def test_inactive_and_deleted_users_are_blocked(client: TestClient, db_session):
         headers={"Authorization": f"Bearer {create_access_token(user.id)}"},
     )
     assert deleted_response.status_code == 403
+    assert deleted_response.json()["error_code"] == "permission_denied"

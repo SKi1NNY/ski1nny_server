@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_active_user
 from app.core.database import get_db
+from app.core.exceptions import AuthenticationError, ConflictError, NotFoundError, PermissionDeniedError, ValidationError
 from app.core.security import create_access_token, create_refresh_token, decode_refresh_token, hash_password, verify_password
-from app.core.exceptions import ConflictError, NotFoundError, ValidationError
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
 from app.schemas.user import (
@@ -50,7 +50,7 @@ def signup(
     repository: UserRepository = Depends(get_user_repository),
 ) -> UserResponse:
     if repository.get_by_email(db, payload.email) is not None:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already exists.")
+        raise ConflictError("Email already exists.")
 
     user = repository.create(db, email=payload.email, password_hash=hash_password(payload.password))
     db.commit()
@@ -66,11 +66,11 @@ def login(
 ) -> TokenResponse:
     user = repository.get_by_email(db, payload.email)
     if user is None or not verify_password(payload.password, user.password_hash):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password.")
+        raise AuthenticationError("Invalid email or password.")
     if not user.is_active:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User account is inactive.")
+        raise PermissionDeniedError("User account is inactive.")
     if user.is_deleted:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User account is deleted.")
+        raise PermissionDeniedError("User account is deleted.")
     return TokenResponse(
         access_token=create_access_token(user.id),
         refresh_token=create_refresh_token(user.id),
@@ -86,15 +86,15 @@ def refresh_token(
     try:
         token_payload = decode_refresh_token(payload.refresh_token)
     except Exception as exc:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Refresh token is invalid.") from exc
+        raise AuthenticationError("Refresh token is invalid.") from exc
 
     user = repository.get_by_id(db, UUID(str(token_payload["sub"])))
     if user is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authenticated user does not exist.")
+        raise AuthenticationError("Authenticated user does not exist.")
     if not user.is_active:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User account is inactive.")
+        raise PermissionDeniedError("User account is inactive.")
     if user.is_deleted:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User account is deleted.")
+        raise PermissionDeniedError("User account is deleted.")
     return TokenResponse(
         access_token=create_access_token(user.id),
         refresh_token=create_refresh_token(user.id),
@@ -107,10 +107,7 @@ def get_my_profile(
     db: Session = Depends(get_db),
     service: UserProfileService = Depends(get_user_profile_service),
 ) -> UserProfileResponse:
-    try:
-        return service.get_profile(db, user_id=current_user.id)
-    except NotFoundError as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=exc.message) from exc
+    return service.get_profile(db, user_id=current_user.id)
 
 
 @router.put("/me/profile", response_model=UserProfileResponse)
@@ -128,9 +125,9 @@ def upsert_my_profile(
             skin_concerns=payload.skin_concerns,
             notes=payload.notes,
         )
-    except NotFoundError as exc:
+    except NotFoundError:
         db.rollback()
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=exc.message) from exc
+        raise
 
 
 @router.post("/me/avoid-ingredients", response_model=AvoidIngredientResponse, status_code=status.HTTP_201_CREATED)
@@ -142,15 +139,9 @@ def add_avoid_ingredient(
 ) -> AvoidIngredientResponse:
     try:
         return service.add_avoid_ingredient(db, user_id=current_user.id, ingredient_id=payload.ingredient_id)
-    except NotFoundError as exc:
+    except (NotFoundError, ConflictError, ValidationError):
         db.rollback()
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=exc.message) from exc
-    except ConflictError as exc:
-        db.rollback()
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=exc.message) from exc
-    except ValidationError as exc:
-        db.rollback()
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=exc.message) from exc
+        raise
 
 
 @router.delete("/me/avoid-ingredients/{avoid_ingredient_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -162,9 +153,9 @@ def delete_avoid_ingredient(
 ) -> Response:
     try:
         service.delete_avoid_ingredient(db, user_id=current_user.id, avoid_ingredient_id=avoid_ingredient_id)
-    except NotFoundError as exc:
+    except NotFoundError:
         db.rollback()
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=exc.message) from exc
+        raise
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -184,9 +175,9 @@ def create_trouble_log(
             severity=payload.severity,
             memo=payload.memo,
         )
-    except NotFoundError as exc:
+    except NotFoundError:
         db.rollback()
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=exc.message) from exc
+        raise
 
 
 @router.get("/me/trouble-logs", response_model=TroubleLogListResponse)
@@ -195,7 +186,4 @@ def list_trouble_logs(
     db: Session = Depends(get_db),
     service: TroubleLogService = Depends(get_trouble_log_service),
 ) -> TroubleLogListResponse:
-    try:
-        return service.list_trouble_logs(db, user_id=current_user.id)
-    except NotFoundError as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=exc.message) from exc
+    return service.list_trouble_logs(db, user_id=current_user.id)

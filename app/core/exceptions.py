@@ -25,6 +25,18 @@ class ValidationError(SkinnyError):
     message = "The request data is invalid."
 
 
+class AuthenticationError(SkinnyError):
+    status_code = 401
+    error_code = "authentication_error"
+    message = "Authentication failed."
+
+
+class PermissionDeniedError(SkinnyError):
+    status_code = 403
+    error_code = "permission_denied"
+    message = "You do not have permission to access this resource."
+
+
 class NotFoundError(SkinnyError):
     status_code = 404
     error_code = "not_found"
@@ -41,3 +53,9 @@ class ExternalServiceError(SkinnyError):
     status_code = 502
     error_code = "external_service_error"
     message = "An external service request failed."
+
+
+class InternalServerError(SkinnyError):
+    status_code = 500
+    error_code = "internal_server_error"
+    message = "An unexpected error occurred."
