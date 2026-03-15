@@ -10,7 +10,7 @@ from app.core.exceptions import ExternalServiceError, ValidationError
 from app.core.ocr_client import OCRClient, OCRResult
 from app.models.ingredient import Ingredient
 from app.repositories.ingredient_repository import IngredientRepository
-from app.repositories.scan_repository import ScanRepository
+from app.repositories.scan_repository import ParsedIngredientCreateItem, ScanRepository
 from app.schemas.product import ScanFallbackResponse, ScanRecognizedIngredientResponse, ScanResponse
 
 CONFIDENCE_THRESHOLD = 0.80
@@ -55,6 +55,26 @@ class ScanService:
 
         ocr_result = self._extract_text(image_bytes=image_bytes, filename=filename)
         normalized_tokens = self._normalize_tokens(db, ocr_result.text)
+        scan_result = self.scan_repository.create_scan_result(
+            db,
+            user_id=user_id,
+            raw_ocr_text=ocr_result.text,
+            confidence_score=ocr_result.confidence_score,
+        )
+        self.scan_repository.add_parsed_ingredients(
+            db,
+            scan_id=scan_result.id,
+            items=[
+                ParsedIngredientCreateItem(
+                    raw_name=token.raw_name,
+                    ingredient_id=token.ingredient.id if token.ingredient else None,
+                    is_mapped=token.is_mapped,
+                )
+                for token in normalized_tokens
+            ],
+        )
+        db.commit()
+
         fallback = None
         if (ocr_result.confidence_score or 0.0) < CONFIDENCE_THRESHOLD:
             fallback = ScanFallbackResponse(
@@ -63,10 +83,10 @@ class ScanService:
             )
 
         return ScanResponse(
-            scan_id=UUID(int=0),
-            product_id=None,
-            raw_ocr_text=ocr_result.text,
-            confidence_score=ocr_result.confidence_score,
+            scan_id=scan_result.id,
+            product_id=scan_result.product_id,
+            raw_ocr_text=scan_result.raw_ocr_text,
+            confidence_score=scan_result.confidence_score,
             recognized_ingredients=[
                 ScanRecognizedIngredientResponse(
                     raw_name=token.raw_name,
