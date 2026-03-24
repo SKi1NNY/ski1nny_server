@@ -30,6 +30,11 @@ class InvalidIngredientReferenceError(ValidationError):
     message = "One or more ingredient references are invalid."
 
 
+class InvalidAvoidIngredientSuggestionError(ValidationError):
+    error_code = "invalid_avoid_ingredient_suggestion"
+    message = "One or more suggested avoid ingredients are invalid."
+
+
 class AuthenticationError(SkinnyError):
     status_code = 401
     error_code = "authentication_error"
