@@ -22,5 +22,233 @@
     "korean_name": "향료",
     "category": "Additive",
     "description": "향을 부여하기 위한 성분군으로, 민감성 피부에는 자극 요인이 될 수 있습니다."
+  },
+  {
+    "inci_name": "Water",
+    "korean_name": "정제수",
+    "category": "Solvent",
+    "description": "제형의 기반이 되는 가장 기본적인 용매입니다."
+  },
+  {
+    "inci_name": "Titanium Dioxide",
+    "korean_name": "티타늄디옥사이드",
+    "category": "UV Filter",
+    "description": "무기 자외선 차단과 색조 제품의 안료로 자주 사용됩니다."
+  },
+  {
+    "inci_name": "Cyclopentasiloxane",
+    "korean_name": "사이클로펜타실록산",
+    "category": "Silicone",
+    "description": "가벼운 발림성과 실키한 사용감을 주는 실리콘 성분입니다."
+  },
+  {
+    "inci_name": "Ethylhexyl Methoxycinnamate",
+    "korean_name": "에칠헥실메톡시신나메이트",
+    "category": "UV Filter",
+    "description": "자외선 차단 제품에 널리 쓰이는 유기 자외선 필터입니다."
+  },
+  {
+    "inci_name": "Cyclohexasiloxane",
+    "korean_name": "사이클로헥사실록산",
+    "category": "Silicone",
+    "description": "빠르게 퍼지고 가볍게 마무리되는 휘발성 실리콘 성분입니다."
+  },
+  {
+    "inci_name": "Dimethicone",
+    "korean_name": "디메치콘",
+    "category": "Silicone",
+    "description": "피부 표면을 매끄럽게 정돈하고 수분 증발을 줄이는 실리콘 성분입니다."
+  },
+  {
+    "inci_name": "4-Methylbenzylidene Camphor",
+    "korean_name": "4-메칠벤질리덴캠퍼",
+    "category": "UV Filter",
+    "description": "자외선 차단 포뮬러에 사용되는 유기 자외선 필터입니다."
+  },
+  {
+    "inci_name": "Cetyl PEG/PPG-10/1 Dimethicone",
+    "korean_name": "세틸피이지/피피지-10/1디메치콘",
+    "category": "Emulsifier",
+    "description": "실리콘 제형에서 유화와 발림성 개선에 사용되는 성분입니다."
+  },
+  {
+    "inci_name": "Glycerin",
+    "korean_name": "글리세린",
+    "category": "Humectant",
+    "description": "수분을 끌어당겨 피부 보습에 도움을 주는 대표적인 보습 성분입니다."
+  },
+  {
+    "inci_name": "Propylene Glycol",
+    "korean_name": "프로필렌글라이콜",
+    "category": "Humectant",
+    "description": "보습과 용해 보조 역할로 널리 사용되는 다가알코올 성분입니다."
+  },
+  {
+    "inci_name": "Arbutin",
+    "korean_name": "알부틴",
+    "category": "Brightening",
+    "description": "톤 개선과 색소 침착 완화에 자주 사용되는 브라이트닝 성분입니다."
+  },
+  {
+    "inci_name": "Dicaprylyl Carbonate",
+    "korean_name": "디카프릴릴카보네이트",
+    "category": "Emollient",
+    "description": "가볍고 부드러운 사용감을 주는 에몰리언트 성분입니다."
+  },
+  {
+    "inci_name": "Mica",
+    "korean_name": "마이카",
+    "category": "Colorant",
+    "description": "광택과 펄감을 더하는 광물성 안료입니다."
+  },
+  {
+    "inci_name": "Lauryl PEG-9 Polydimethylsiloxyethyl Dimethicone",
+    "korean_name": "라우릴피이지-9폴리디메칠실록시에칠디메치콘",
+    "category": "Emulsifier",
+    "description": "실리콘 제형의 안정화와 분산에 쓰이는 유화 보조 성분입니다."
+  },
+  {
+    "inci_name": "Magnesium Sulfate",
+    "korean_name": "마그네슘설페이트",
+    "category": "Stabilizer",
+    "description": "점도와 제형 안정화에 사용되는 무기염 성분입니다."
+  },
+  {
+    "inci_name": "Butylene Glycol",
+    "korean_name": "부틸렌글라이콜",
+    "category": "Humectant",
+    "description": "보습과 용해 보조 역할을 하는 대표적인 다가알코올 성분입니다."
+  },
+  {
+    "inci_name": "Quaternium-18 Bentonite",
+    "korean_name": "쿼터늄-18벤토나이트",
+    "category": "Stabilizer",
+    "description": "제형 점도와 안료 분산을 돕는 클레이 유도체입니다."
+  },
+  {
+    "inci_name": "Scutellaria Baicalensis Root Extract",
+    "korean_name": "황금추출물",
+    "category": "Extract",
+    "description": "진정과 항산화 용도로 자주 사용되는 식물 추출물입니다."
+  },
+  {
+    "inci_name": "Sodium Dehydroacetate",
+    "korean_name": "소듐데하이드로아세테이트",
+    "category": "Preservative",
+    "description": "제품 보존을 위해 사용되는 보존제 성분입니다."
+  },
+  {
+    "inci_name": "Methicone",
+    "korean_name": "메치콘",
+    "category": "Silicone",
+    "description": "표면 코팅과 사용감 개선에 사용되는 실리콘 성분입니다."
+  },
+  {
+    "inci_name": "Yellow Iron Oxide",
+    "korean_name": "황색산화철",
+    "category": "Colorant",
+    "description": "색조 제품에 널리 사용되는 무기 안료입니다."
+  },
+  {
+    "inci_name": "Tocopheryl Acetate",
+    "korean_name": "토코페릴아세테이트",
+    "category": "Antioxidant",
+    "description": "비타민 E 유도체로 항산화와 컨디셔닝 목적에 사용됩니다."
+  },
+  {
+    "inci_name": "Lecithin",
+    "korean_name": "레시틴",
+    "category": "Emollient",
+    "description": "유화 보조와 피부 컨디셔닝에 사용되는 인지질 성분입니다."
+  },
+  {
+    "inci_name": "Red Iron Oxide",
+    "korean_name": "적색산화철",
+    "category": "Colorant",
+    "description": "색조 제품에 사용되는 적색 무기 안료입니다."
+  },
+  {
+    "inci_name": "Black Iron Oxide",
+    "korean_name": "흑색산화철",
+    "category": "Colorant",
+    "description": "색조 제품에 사용되는 흑색 무기 안료입니다."
+  },
+  {
+    "inci_name": "Gracilaria Verrucosa Extract",
+    "korean_name": "꼬시래기추출물",
+    "category": "Extract",
+    "description": "보습과 컨디셔닝에 사용되는 해조 추출물입니다."
+  },
+  {
+    "inci_name": "Adenosine",
+    "korean_name": "아데노신",
+    "category": "Anti-aging",
+    "description": "주름 개선 기능성 원료로 널리 사용되는 성분입니다."
+  },
+  {
+    "inci_name": "Chlorella Vulgaris Extract",
+    "korean_name": "클로렐라추출물",
+    "category": "Extract",
+    "description": "항산화와 피부 컨디셔닝에 쓰이는 녹조 추출물입니다."
+  },
+  {
+    "inci_name": "Carrageenan Extract",
+    "korean_name": "카라기난추출물",
+    "category": "Extract",
+    "description": "점도와 보습감 형성에 쓰이는 해조 유래 성분입니다."
+  },
+  {
+    "inci_name": "Laminaria Japonica Extract",
+    "korean_name": "다시마추출물",
+    "category": "Extract",
+    "description": "보습과 컨디셔닝에 사용되는 해조 추출물입니다."
+  },
+  {
+    "inci_name": "1,2-Hexanediol",
+    "korean_name": "1,2-헥산디올",
+    "category": "Humectant",
+    "description": "보습과 보존 보조 역할로 널리 사용되는 다가알코올 성분입니다."
+  },
+  {
+    "inci_name": "Caprylic/Capric Triglyceride",
+    "korean_name": "카프릴릭/카프릭트리글리세라이드",
+    "category": "Emollient",
+    "description": "부드러운 사용감과 에몰리언트 효과를 주는 유래 오일 성분입니다."
+  },
+  {
+    "inci_name": "Hydrogenated Lecithin",
+    "korean_name": "하이드로제네이티드레시틴",
+    "category": "Emollient",
+    "description": "피부 장벽 보조와 유화 안정화에 사용되는 레시틴 유도체입니다."
+  },
+  {
+    "inci_name": "Polysorbate 80",
+    "korean_name": "폴리소르베이트80",
+    "category": "Emulsifier",
+    "description": "유화와 분산을 돕는 비이온계 계면활성제입니다."
+  },
+  {
+    "inci_name": "Pinus Radiata Bark Extract",
+    "korean_name": "몬터레이소나무껍질추출물",
+    "category": "Extract",
+    "description": "항산화와 컨디셔닝 목적에 사용되는 식물 추출물입니다."
+  },
+  {
+    "inci_name": "Ubiquinone",
+    "korean_name": "유비퀴논",
+    "category": "Antioxidant",
+    "description": "코엔자임 Q10으로 알려진 항산화 성분입니다."
+  },
+  {
+    "inci_name": "Ethylhexylglycerin",
+    "korean_name": "에칠헥실글리세린",
+    "category": "Preservative Booster",
+    "description": "보존 보조와 피부 컨디셔닝에 사용되는 성분입니다."
+  },
+  {
+    "inci_name": "Glyceryl Caprylate",
+    "korean_name": "글리세릴카프릴레이트",
+    "category": "Emollient",
+    "description": "에몰리언트와 보존 보조 역할을 하는 성분입니다."
   }
 ]

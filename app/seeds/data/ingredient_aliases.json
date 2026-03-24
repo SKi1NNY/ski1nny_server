@@ -18,5 +18,200 @@
     "ingredient_inci_name": "Fragrance",
     "alias_name": "향료",
     "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Water",
+    "alias_name": "정제수",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Titanium Dioxide",
+    "alias_name": "티타늄디옥사이드",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Cyclopentasiloxane",
+    "alias_name": "사이클로펜타실록산",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Ethylhexyl Methoxycinnamate",
+    "alias_name": "에칠헥실메톡시신나메이트",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Cyclohexasiloxane",
+    "alias_name": "사이클로헥사실록산",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Dimethicone",
+    "alias_name": "디메치콘",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Dimethicone",
+    "alias_name": "디메티콘",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "4-Methylbenzylidene Camphor",
+    "alias_name": "4-메칠벤질리덴캠퍼",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Cetyl PEG/PPG-10/1 Dimethicone",
+    "alias_name": "세틸피이지/피피지-10/1디메치콘",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Glycerin",
+    "alias_name": "글리세린",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Propylene Glycol",
+    "alias_name": "프로필렌글라이콜",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Arbutin",
+    "alias_name": "알부틴",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Dicaprylyl Carbonate",
+    "alias_name": "디카프릴릴카보네이트",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Mica",
+    "alias_name": "마이카",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Lauryl PEG-9 Polydimethylsiloxyethyl Dimethicone",
+    "alias_name": "라우릴피이지-9폴리디메칠실록시에칠디메치콘",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Magnesium Sulfate",
+    "alias_name": "마그네슘설페이트",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Butylene Glycol",
+    "alias_name": "부틸렌글라이콜",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Quaternium-18 Bentonite",
+    "alias_name": "쿼터늄-18벤토나이트",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Scutellaria Baicalensis Root Extract",
+    "alias_name": "황금추출물",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Sodium Dehydroacetate",
+    "alias_name": "소듐데하이드로아세테이트",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Methicone",
+    "alias_name": "메치콘",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Yellow Iron Oxide",
+    "alias_name": "황색산화철",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Tocopheryl Acetate",
+    "alias_name": "토코페릴아세테이트",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Lecithin",
+    "alias_name": "레시틴",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Red Iron Oxide",
+    "alias_name": "적색산화철",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Black Iron Oxide",
+    "alias_name": "흑색산화철",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Gracilaria Verrucosa Extract",
+    "alias_name": "꼬시래기추출물",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Adenosine",
+    "alias_name": "아데노신",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Chlorella Vulgaris Extract",
+    "alias_name": "클로렐라추출물",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Carrageenan Extract",
+    "alias_name": "카라기난추출물",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Laminaria Japonica Extract",
+    "alias_name": "다시마추출물",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "1,2-Hexanediol",
+    "alias_name": "1,2-헥산디올",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Caprylic/Capric Triglyceride",
+    "alias_name": "카프릴릭/카프릭트리글리세라이드",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Hydrogenated Lecithin",
+    "alias_name": "하이드로제네이티드레시틴",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Polysorbate 80",
+    "alias_name": "폴리소르베이트80",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Pinus Radiata Bark Extract",
+    "alias_name": "몬터레이소나무껍질추출물",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Ubiquinone",
+    "alias_name": "유비퀴논",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Ethylhexylglycerin",
+    "alias_name": "에칠헥실글리세린",
+    "language": "ko"
+  },
+  {
+    "ingredient_inci_name": "Glyceryl Caprylate",
+    "alias_name": "글리세릴카프릴레이트",
+    "language": "ko"
   }
 ]
