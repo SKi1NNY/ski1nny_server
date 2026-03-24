@@ -97,6 +97,87 @@ def test_scan_service_maps_aliases_and_preserves_raw_text(db_session):
     assert len(result.validation.conflicts) == 1
 
 
+def test_scan_service_merges_wrapped_korean_tokens_and_strips_header(db_session):
+    user = _create_user(db_session)
+    _create_ingredient(db_session, "Water", alias_name="정제수")
+    _create_ingredient(db_session, "Arbutin", alias_name="알부틴")
+    _create_ingredient(db_session, "Tocopheryl Acetate", alias_name="토코페릴아세테이트")
+    _create_ingredient(db_session, "1,2-Hexanediol", alias_name="1,2-헥산디올")
+    _create_ingredient(
+        db_session,
+        "Cetyl PEG/PPG-10/1 Dimethicone",
+        alias_name="세틸피이지/피피지-10/1디메치콘",
+    )
+
+    service = ScanService(
+        FakeOCRClient(
+            "[전성분] 정제수, 알부\n틴, 토\n코페릴아세테이트, 1\n,2-헥산디올, 세틸피이지/피피지-10/1디메치콘",
+            0.96,
+        )
+    )
+
+    result = service.scan_ingredients(
+        db_session,
+        user_id=user.id,
+        image_bytes=b"fake-image-bytes",
+        filename="wrapped-korean.txt",
+    )
+
+    assert [item.raw_name for item in result.recognized_ingredients] == [
+        "정제수",
+        "알부틴",
+        "토코페릴아세테이트",
+        "1,2-헥산디올",
+        "세틸피이지/피피지-10/1디메치콘",
+    ]
+    assert [item.normalized_name for item in result.recognized_ingredients] == [
+        "Water",
+        "Arbutin",
+        "Tocopheryl Acetate",
+        "1,2-Hexanediol",
+        "Cetyl PEG/PPG-10/1 Dimethicone",
+    ]
+    assert result.unmapped_ingredients == []
+
+
+def test_scan_service_splits_adjacent_wrapped_aliases_without_delimiter(db_session):
+    user = _create_user(db_session)
+    _create_ingredient(
+        db_session,
+        "4-Methylbenzylidene Camphor",
+        alias_name="4-메칠벤질리덴캠퍼",
+    )
+    _create_ingredient(
+        db_session,
+        "Cetyl PEG/PPG-10/1 Dimethicone",
+        alias_name="세틸피이지/피피지-10/1디메치콘",
+    )
+
+    service = ScanService(
+        FakeOCRClient(
+            "[전성분] 4-메칠벤질리덴캠퍼\n세틸피이지/피피지-10/1디메치콘",
+            0.94,
+        )
+    )
+
+    result = service.scan_ingredients(
+        db_session,
+        user_id=user.id,
+        image_bytes=b"fake-image-bytes",
+        filename="adjacent-korean.txt",
+    )
+
+    assert [item.raw_name for item in result.recognized_ingredients] == [
+        "4-메칠벤질리덴캠퍼",
+        "세틸피이지/피피지-10/1디메치콘",
+    ]
+    assert [item.normalized_name for item in result.recognized_ingredients] == [
+        "4-Methylbenzylidene Camphor",
+        "Cetyl PEG/PPG-10/1 Dimethicone",
+    ]
+    assert result.unmapped_ingredients == []
+
+
 def test_scan_service_returns_fallback_for_low_confidence(db_session):
     user = _create_user(db_session)
     _create_ingredient(db_session, "Niacinamide")

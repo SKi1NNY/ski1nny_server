@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from functools import lru_cache
 from uuid import UUID
 
 from sqlalchemy.orm import Session
@@ -15,10 +16,15 @@ from app.schemas.product import ScanFallbackResponse, ScanRecognizedIngredientRe
 from app.services.validation_service import ValidationService
 
 CONFIDENCE_THRESHOLD = 0.80
-TOKEN_SPLIT_PATTERN = re.compile(r"[\n,;/]+")
+TOKEN_SPLIT_PATTERN = re.compile(r"[,;]+")
 PAREN_CONTENT_PATTERN = re.compile(r"\([^)]*\)")
-NON_LETTER_PATTERN = re.compile(r"[^A-Za-z가-힣\s-]")
+LEADING_HEADER_PATTERN = re.compile(r"^\s*\[?\s*전성분\s*\]?\s*[:：]?\s*", re.IGNORECASE)
+NUMERIC_COMMA_PATTERN = re.compile(r"(?<=\d),(?=\d)")
+NON_INGREDIENT_PATTERN = re.compile(r"[^0-9A-Za-z가-힣\s\-/]")
+STANDALONE_NUMBER_PATTERN = re.compile(r"(?<![/-])\b\d+(?:,\d+)?\b(?![/-])")
 MULTISPACE_PATTERN = re.compile(r"\s+")
+SEPARATOR_SPACE_PATTERN = re.compile(r"\s*([/,-])\s*")
+NUMERIC_COMMA_PLACEHOLDER = "NUMERICCOMMA"
 
 
 @dataclass(slots=True)
@@ -127,23 +133,48 @@ class ScanService:
             raise ExternalServiceError("Failed to process OCR request.") from exc
 
     def _tokenize(self, raw_text: str) -> list[str]:
-        cleaned = PAREN_CONTENT_PATTERN.sub(" ", raw_text)
+        cleaned = self._normalize_raw_text(raw_text)
+        if not cleaned:
+            return []
+
+        protected = NUMERIC_COMMA_PATTERN.sub(NUMERIC_COMMA_PLACEHOLDER, cleaned)
         tokens: list[str] = []
-        for chunk in TOKEN_SPLIT_PATTERN.split(cleaned):
-            token = NON_LETTER_PATTERN.sub(" ", chunk)
+        for chunk in TOKEN_SPLIT_PATTERN.split(protected):
+            token = NON_INGREDIENT_PATTERN.sub(" ", chunk)
+            token = STANDALONE_NUMBER_PATTERN.sub(" ", token)
             token = MULTISPACE_PATTERN.sub(" ", token).strip(" -")
+            token = token.replace(NUMERIC_COMMA_PLACEHOLDER, ",")
+            token = SEPARATOR_SPACE_PATTERN.sub(r"\1", token)
             if token:
                 tokens.append(token)
         return tokens
+
+    def _normalize_raw_text(self, raw_text: str) -> str:
+        cleaned = raw_text.replace("\r", "")
+        cleaned = LEADING_HEADER_PATTERN.sub("", cleaned)
+        cleaned = PAREN_CONTENT_PATTERN.sub(" ", cleaned)
+        lines = [line.strip() for line in cleaned.splitlines() if line.strip()]
+        if not lines:
+            return ""
+
+        merged = lines[0]
+        for line in lines[1:]:
+            if merged.rstrip().endswith((",", ";")):
+                merged = f"{merged.rstrip()} {line.lstrip()}"
+            else:
+                merged = f"{merged.rstrip()}{line.lstrip()}"
+        return merged.strip()
 
     def _normalize_tokens(self, db: Session, raw_text: str) -> list[NormalizedToken]:
         raw_tokens = self._tokenize(raw_text)
         if not raw_tokens:
             return []
 
-        direct_ingredients = self.ingredient_repository.list_by_inci_names(db, raw_tokens)
+        candidate_tokens = self._build_candidate_tokens(raw_tokens)
+        direct_ingredients = self.ingredient_repository.list_by_inci_names(db, candidate_tokens)
         direct_map = {ingredient.inci_name.strip().lower(): ingredient for ingredient in direct_ingredients}
-        alias_map = self.ingredient_repository.map_aliases(db, raw_tokens)
+        alias_map = self.ingredient_repository.map_aliases(db, candidate_tokens)
+        raw_tokens = self._expand_compound_tokens(raw_tokens, direct_map=direct_map, alias_map=alias_map)
 
         normalized_tokens: list[NormalizedToken] = []
         seen_normalized_names: set[str] = set()
@@ -163,3 +194,56 @@ class ScanService:
                 )
             )
         return normalized_tokens
+
+    def _build_candidate_tokens(self, raw_tokens: list[str]) -> list[str]:
+        candidates = {token for token in raw_tokens if token}
+        for token in raw_tokens:
+            if len(token) < 4:
+                continue
+            for index in range(1, len(token)):
+                left = token[:index].strip(" -")
+                right = token[index:].strip(" -")
+                if left:
+                    candidates.add(left)
+                if right:
+                    candidates.add(right)
+        return sorted(candidates)
+
+    def _expand_compound_tokens(
+        self,
+        raw_tokens: list[str],
+        *,
+        direct_map: dict[str, Ingredient],
+        alias_map: dict[str, Ingredient],
+    ) -> list[str]:
+        exact_matches = set(direct_map) | set(alias_map)
+
+        @lru_cache(maxsize=None)
+        def split_token(token: str) -> tuple[str, ...] | None:
+            normalized = token.strip().lower()
+            if not normalized:
+                return None
+            if normalized in exact_matches:
+                return (token,)
+
+            for index in range(1, len(token)):
+                left = token[:index].strip(" -")
+                right = token[index:].strip(" -")
+                if not left or not right:
+                    continue
+                if left.strip().lower() not in exact_matches:
+                    continue
+                right_parts = split_token(right)
+                if right_parts is not None:
+                    return (left, *right_parts)
+
+            return None
+
+        expanded: list[str] = []
+        for token in raw_tokens:
+            parts = split_token(token)
+            if parts is None:
+                expanded.append(token)
+            else:
+                expanded.extend(parts)
+        return expanded
