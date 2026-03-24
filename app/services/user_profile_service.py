@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from typing import Protocol
 from uuid import UUID
 
 from sqlalchemy.orm import Session
@@ -17,16 +16,7 @@ from app.repositories.ingredient_repository import IngredientRepository
 from app.repositories.user_profile_repository import UserProfileRepository
 from app.repositories.user_repository import UserRepository
 from app.schemas.user import AvoidIngredientResponse, UserProfileResponse
-
-
-class RecommendationCacheInvalidator(Protocol):
-    def invalidate_recommendation_cache(self, user_id: UUID) -> None:
-        ...
-
-
-class NoOpRecommendationCacheInvalidator:
-    def invalidate_recommendation_cache(self, user_id: UUID) -> None:
-        return None
+from app.services.recommendation_cache import NoOpRecommendationCacheInvalidator, RecommendationCacheInvalidator
 
 
 class UserProfileService:
