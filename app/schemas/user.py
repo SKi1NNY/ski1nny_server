@@ -83,6 +83,10 @@ class TroubleLogCreateRequest(BaseModel):
     memo: str | None = None
 
 
+class TroubleLogConfirmAvoidIngredientsRequest(BaseModel):
+    ingredient_ids: list[UUID] = Field(min_length=1)
+
+
 class TroubleLogResponse(BaseModel):
     id: UUID
     user_id: UUID
@@ -98,6 +102,11 @@ class TroubleLogResponse(BaseModel):
 class TroubleLogCreateResponse(BaseModel):
     trouble_log: TroubleLogResponse
     suggested_avoid_ingredients: list[SuggestedAvoidIngredientResponse] = Field(default_factory=list)
+
+
+class TroubleLogConfirmAvoidIngredientsResponse(BaseModel):
+    trouble_log_id: UUID
+    confirmed_avoid_ingredients: list[AvoidIngredientResponse] = Field(default_factory=list)
 
 
 class TroubleLogListResponse(BaseModel):

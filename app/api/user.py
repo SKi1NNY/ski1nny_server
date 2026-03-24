@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.orm import Session
 
@@ -11,6 +13,8 @@ from app.schemas.user import (
     AvoidIngredientResponse,
     RefreshTokenRequest,
     TokenResponse,
+    TroubleLogConfirmAvoidIngredientsRequest,
+    TroubleLogConfirmAvoidIngredientsResponse,
     TroubleLogCreateRequest,
     TroubleLogCreateResponse,
     TroubleLogListResponse,
@@ -136,3 +140,33 @@ def list_trouble_logs(
     service: TroubleLogService = Depends(get_trouble_log_service),
 ) -> TroubleLogListResponse:
     return service.list_trouble_logs(db, user_id=current_user.id)
+
+
+@router.post(
+    "/me/trouble-logs/{trouble_log_id}/confirm-avoid-ingredients",
+    response_model=TroubleLogConfirmAvoidIngredientsResponse,
+)
+def confirm_trouble_log_avoid_ingredients(
+    trouble_log_id: UUID,
+    payload: TroubleLogConfirmAvoidIngredientsRequest,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+    service: TroubleLogService = Depends(get_trouble_log_service),
+) -> TroubleLogConfirmAvoidIngredientsResponse:
+    return service.confirm_suggested_avoid_ingredients(
+        db,
+        user_id=current_user.id,
+        trouble_log_id=trouble_log_id,
+        ingredient_ids=payload.ingredient_ids,
+    )
+
+
+@router.delete("/me/trouble-logs/{trouble_log_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_trouble_log(
+    trouble_log_id: UUID,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+    service: TroubleLogService = Depends(get_trouble_log_service),
+) -> Response:
+    service.soft_delete_trouble_log(db, user_id=current_user.id, trouble_log_id=trouble_log_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
