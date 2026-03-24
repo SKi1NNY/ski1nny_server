@@ -24,7 +24,10 @@ services:
       PINECONE_API_KEY: ${PINECONE_API_KEY:-}
       PINECONE_INDEX_NAME: ${PINECONE_INDEX_NAME:-skinny-ingredients}
       PINECONE_ENVIRONMENT: ${PINECONE_ENVIRONMENT:-us-east-1}
-      OCR_PROVIDER: ${OCR_PROVIDER:-google-ml-kit}
+      OCR_PROVIDER: ${OCR_PROVIDER:-google-cloud-vision}
+      OCR_TRANSPORT: ${OCR_TRANSPORT:-rest}
+      OCR_TIMEOUT_SECONDS: ${OCR_TIMEOUT_SECONDS:-15}
+      GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS:-}
     ports:
       - "8000:8000"
     depends_on:
@@ -34,6 +37,7 @@ services:
         condition: service_started
     volumes:
       - .:/app
+      - ${HOME}/.config/gcloud:/root/.config/gcloud:ro
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
   postgres:

@@ -32,7 +32,10 @@ class Settings(BaseSettings):
     pinecone_api_key: str | None = None
     pinecone_index_name: str = "skinny-ingredients"
     pinecone_environment: str = "us-east-1"
-    ocr_provider: str = "google-ml-kit"
+    ocr_provider: Literal["local-text", "google-cloud-vision"] = "local-text"
+    ocr_transport: Literal["grpc", "rest"] = "rest"
+    ocr_timeout_seconds: float = 15.0
+    google_application_credentials: str | None = None
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -47,6 +50,18 @@ class Settings(BaseSettings):
         if isinstance(value, str):
             return [origin.strip() for origin in value.split(",") if origin.strip()]
         return value
+
+    @field_validator("ocr_provider", mode="before")
+    @classmethod
+    def parse_ocr_provider(cls, value: str) -> str:
+        normalized = value.strip().lower()
+        aliases = {
+            "local_text": "local-text",
+            "mock": "local-text",
+            "google_cloud_vision": "google-cloud-vision",
+            "google-ml-kit": "google-cloud-vision",
+        }
+        return aliases.get(normalized, normalized)
 
     @computed_field
     @property
