@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import distinct, func, select
 from sqlalchemy.orm import Session, joinedload
 
 from app.models.trouble_log import TroubleLog, TroubleLogIngredient
@@ -63,6 +63,18 @@ class TroubleLogRepository:
             .order_by(TroubleLog.logged_at.desc(), TroubleLog.id.desc())
         )
         return list(db.scalars(stmt).unique())
+
+    def list_active_product_ids_by_user(self, db: Session, user_id: UUID) -> list[UUID]:
+        stmt = (
+            select(distinct(TroubleLog.product_id))
+            .where(
+                TroubleLog.user_id == user_id,
+                TroubleLog.is_deleted.is_(False),
+                TroubleLog.product_id.is_not(None),
+            )
+            .order_by(TroubleLog.product_id.asc())
+        )
+        return list(db.scalars(stmt))
 
     def soft_delete(self, db: Session, trouble_log: TroubleLog) -> TroubleLog:
         trouble_log.is_deleted = True

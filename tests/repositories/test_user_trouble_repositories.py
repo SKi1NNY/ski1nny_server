@@ -104,6 +104,7 @@ def test_trouble_log_repository_supports_soft_delete_and_aggregation(db_session)
     stats = trouble_repository.aggregate_ingredient_occurrences(db_session, user.id)
     assert stats[0].ingredient_id == ingredient_a.id
     assert stats[0].occurrence_count == 2
+    assert trouble_repository.list_active_product_ids_by_user(db_session, user.id) == [product.id]
 
     trouble_repository.soft_delete(db_session, first)
     remaining = trouble_repository.list_by_user_id(db_session, user.id)
