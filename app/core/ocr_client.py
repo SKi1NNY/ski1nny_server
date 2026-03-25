@@ -28,7 +28,7 @@ class LocalTextOCRClient:
         except UnicodeDecodeError as exc:
             raise ExternalServiceError(
                 "OCR provider is not configured for binary image processing in the current environment.",
-                detail={"provider": settings.ocr_provider, "filename": filename},
+                detail={"provider": "local-text", "filename": filename},
             ) from exc
 
         confidence_score = 0.99 if text else 0.0
