@@ -19,9 +19,6 @@ depends_on = None
 
 
 def upgrade() -> None:
-    conflict_severity = sa.Enum("LOW", "MID", "HIGH", name="conflict_severity")
-    conflict_severity.create(op.get_bind(), checkfirst=True)
-
     op.create_table(
         "ingredients",
         sa.Column("id", postgresql.UUID(as_uuid=True), nullable=False),
@@ -50,7 +47,11 @@ def upgrade() -> None:
         sa.Column("id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("ingredient_a_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("ingredient_b_id", postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column("severity", conflict_severity, nullable=False),
+        sa.Column(
+            "severity",
+            sa.Enum("LOW", "MID", "HIGH", name="conflict_severity", create_type=False),
+            nullable=False,
+        ),
         sa.Column("reason", sa.Text(), nullable=False),
         sa.CheckConstraint("ingredient_a_id < ingredient_b_id", name="ck_ingredient_conflicts_ordering"),
         sa.ForeignKeyConstraint(["ingredient_a_id"], ["ingredients.id"], ondelete="CASCADE"),
@@ -64,5 +65,4 @@ def downgrade() -> None:
     op.drop_table("ingredient_aliases")
     op.drop_table("ingredients")
 
-    conflict_severity = sa.Enum("LOW", "MID", "HIGH", name="conflict_severity")
-    conflict_severity.drop(op.get_bind(), checkfirst=True)
+    sa.Enum("LOW", "MID", "HIGH", name="conflict_severity").drop(op.get_bind(), checkfirst=True)
