@@ -108,3 +108,25 @@ def test_recommendation_service_returns_fallback_when_all_products_filtered(db_s
     assert response.recommendations == []
     assert response.fallback is not None
     assert "조건에 맞는 추천 제품이 없습니다." == response.fallback.message
+
+
+def test_recommendation_service_does_not_block_low_severity_skin_type_rules(db_session):
+    user = _create_user(db_session, email="dry-profile@example.com")
+    UserProfileService().upsert_profile(
+        db_session,
+        user_id=user.id,
+        skin_type=SkinType.DRY,
+        skin_concerns=["dryness"],
+        notes="dry-profile",
+    )
+
+    centella = _create_ingredient(db_session, "Centella Asiatica Extract", category="Extract")
+    glycolic_acid = _create_ingredient(db_session, "Glycolic Acid", category="Exfoliant")
+
+    hydrating = _create_product(db_session, "Hydrating Toner", [centella.id])
+    low_warning = _create_product(db_session, "Mild Exfoliating Toner", [centella.id, glycolic_acid.id])
+
+    response = RecommendationService().recommend_products(db_session, user_id=user.id, limit=5)
+
+    assert {item.product_id for item in response.recommendations} == {hydrating.id, low_warning.id}
+    assert response.fallback is None

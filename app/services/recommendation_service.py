@@ -199,7 +199,7 @@ class RecommendationService:
             has_high_conflict = any(conflict.severity == ConflictSeverity.HIGH for conflict in validation.conflicts)
             has_skin_type_blocker = bool(
                 effective_skin_type
-                and self._build_skin_type_warnings(product, effective_skin_type)
+                and self._has_skin_type_blocker(product, effective_skin_type)
             )
             if has_high_conflict or has_skin_type_blocker:
                 continue
@@ -319,26 +319,24 @@ class RecommendationService:
             )
         return warnings
 
-    def _build_skin_type_warnings(
+    def _has_skin_type_blocker(
         self,
         product: Product,
         skin_type: SkinType,
-    ) -> list[RecommendationWarningResponse]:
+    ) -> bool:
         rules = SKIN_TYPE_RULES.get(skin_type, {})
-        warnings: list[RecommendationWarningResponse] = []
+        if not rules:
+            return False
+
         for item in product.product_ingredients:
             ingredient_name = item.ingredient.inci_name.strip().lower()
             rule = rules.get(ingredient_name)
             if rule is None:
                 continue
-            _, reason = rule
-            warnings.append(
-                RecommendationWarningResponse(
-                    type="skin_type_blocker",
-                    message=reason,
-                )
-            )
-        return warnings
+            severity, _ = rule
+            if severity in {ConflictSeverity.MID, ConflictSeverity.HIGH}:
+                return True
+        return False
 
     def _resolve_skin_concerns(self, *, requested: list[str], profile_concerns: list[str]) -> list[str]:
         source = requested or profile_concerns
