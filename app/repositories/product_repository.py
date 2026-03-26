@@ -59,6 +59,16 @@ class ProductRepository:
         )
         return db.execute(stmt).unique().scalar_one_or_none()
 
+    def list_all(self, db: Session) -> list[Product]:
+        stmt = (
+            select(Product)
+            .options(
+                joinedload(Product.product_ingredients).joinedload(ProductIngredient.ingredient),
+            )
+            .order_by(Product.created_at.desc(), Product.id.desc())
+        )
+        return list(db.execute(stmt).unique().scalars().all())
+
     def list_ingredient_ids(self, db: Session, product_id: UUID) -> list[UUID]:
         stmt = (
             select(ProductIngredient.ingredient_id)
