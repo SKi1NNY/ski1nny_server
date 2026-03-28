@@ -88,6 +88,11 @@ class ProductNotFoundError(NotFoundError):
     message = "Product does not exist."
 
 
+class IngredientNotFoundError(NotFoundError):
+    error_code = "ingredient_not_found"
+    message = "Ingredient does not exist."
+
+
 class TroubleLogNotFoundError(NotFoundError):
     error_code = "trouble_log_not_found"
     message = "Trouble log does not exist."

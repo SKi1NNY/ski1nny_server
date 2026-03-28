@@ -28,6 +28,9 @@ class Settings(BaseSettings):
     jwt_access_token_expire_minutes: int = 30
     jwt_refresh_token_expire_days: int = 14
 
+    llm_provider: Literal["local-template", "anthropic"] = "local-template"
+    llm_timeout_seconds: float = 5.0
+    anthropic_model: str = "claude-3-5-haiku-latest"
     anthropic_api_key: str | None = None
     pinecone_api_key: str | None = None
     pinecone_index_name: str = "skinny-ingredients"

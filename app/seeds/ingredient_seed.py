@@ -7,10 +7,20 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.database import SessionLocal
+from app.models import ingredient as ingredient_models
+from app.models import product as product_models
+from app.models import trouble_log as trouble_log_models
+from app.models import user as user_models
 from app.models.ingredient import ConflictSeverity, Ingredient, IngredientAlias, IngredientConflict
 
 
 DATA_DIR = Path(__file__).resolve().parent / "data"
+MODEL_MODULES = (
+    ingredient_models,
+    product_models,
+    trouble_log_models,
+    user_models,
+)
 
 
 def _load_json(path: Path) -> list[dict]:

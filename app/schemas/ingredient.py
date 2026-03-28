@@ -66,3 +66,19 @@ class IngredientValidationResponse(BaseModel):
     severity: ConflictSeverity | None = None
     conflicts: list[IngredientConflictResponse] = Field(default_factory=list)
     personal_warnings: list[IngredientPersonalWarningResponse] = Field(default_factory=list)
+
+
+class IngredientExplainSourceResponse(BaseModel):
+    ingredient_id: UUID
+    ingredient_name: str
+    source: str
+    excerpt: str
+
+
+class IngredientExplainResponse(BaseModel):
+    ingredient_id: UUID
+    inci_name: str
+    korean_name: str | None = None
+    is_grounded: bool
+    summary: str
+    sources: list[IngredientExplainSourceResponse] = Field(default_factory=list)
